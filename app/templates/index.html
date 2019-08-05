@@ -20,7 +20,7 @@
     <script type="text/javascript" charset="utf-8">
 
 
-        var socket = io('http://127.0.0.1');
+        var socket = io('https://flask-io-chat.herokuapp.com/');
         var current_room = ''
         socket.on('connect', function() {
             socket.emit('my event', {data: 'I\'m connected!'});
