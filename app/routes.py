@@ -1,6 +1,6 @@
 from app import app, db
 from flask_restful import Resource, marshal
-from flask import request, jsonify, g
+from flask import request, jsonify, g, render_template
 from app.models import User
 from app.send_sms import send_sms, generate_code
 
@@ -8,7 +8,7 @@ from app.send_sms import send_sms, generate_code
 @app.route('/')
 @app.route('/index')
 def index():
-    return 'Hello!'
+    return render_template('index.html')
 
 
 @app.route('/api/v1.0/register', methods=['POST'])
