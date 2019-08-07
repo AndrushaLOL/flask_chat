@@ -15,7 +15,7 @@ class User(db.Model):
     phone = db.Column(db.String, unique=True, index=True)
     active = db.Column(db.Boolean, default=False)
     messages = db.relationship('Message', backref='author', lazy='dynamic')
-    viewed = db.Column(db.PickleType, default=list)
+    viewed = db.Column(db.PickleType, default=dict)
     rooms = db.relationship('Room', secondary=association_table, backref='users')
 
     @property
@@ -26,7 +26,9 @@ class User(db.Model):
         return res
 
     def view_room(self, room_name):
-        self.viewed.extend(self._all_messages[room_name])
+        if room_name in self.viewed:
+            self.viewed[room_name] = list()
+        self.viewed[room_name].extend(self._all_messages[room_name])
 
 
     def __repr__(self):
@@ -37,6 +39,14 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True, index=True)
     messages = db.relationship('Message', backref='room', lazy='dynamic')
+
+    @property
+    def type(self):
+        if len(self.users) > 2:
+            return 'group'
+        else:
+            return 'dialog'
+
     # users = db.relationship('User', secondary=association_table, backref='rooms')
 
     def __repr__(self):

@@ -16,7 +16,11 @@ def on_initialize(data):
     rooms = u.rooms
     response = {}
     for room in rooms:
-        response[room.name] = [ms.serialize for ms in room.messages.all()]
+        response[room.name] = {}
+        response[room.name]['message'] = room.messages.all()[-1].serialize
+        response[room.name]['count'] = len(u._all_messages.get(room.name, [])) - len(u.viewed.get(room.name, []))
+        response[room.name]['users'] = [u.username for u in room.users if u.username != username] 
+
         join_room(room.name)
     emit('get_messages', response)
         

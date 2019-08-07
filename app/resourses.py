@@ -47,6 +47,10 @@ class RoomApi(Resource):
     def post(self):
         data = request.get_json()
         r = Room(name=data['name'])
+        users = data['users']
+        for username in users:
+            u = User.query.filter_by(username=username).first()
+            u.rooms.append(r)
         db.session.add(r)
         db.session.commit()
         return {'id': r.id, 'name': r.name}
