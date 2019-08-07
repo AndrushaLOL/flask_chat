@@ -60,6 +60,7 @@ class UserApi(Resource):
     def post(self):
         data = request.get_json()
         data['active'] = True
+        data['viewed'] = dict()
         u = User(**data)
         db.session.add(u)
         db.session.commit()
