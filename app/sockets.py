@@ -9,6 +9,20 @@ def on_connect():
     send('Connected!')
 
 
+@socketio.on('initialize')
+def on_initialize(data):
+    username = data['username']
+    u = User.query.filter_by(username=username).first()
+    rooms = u.rooms
+    response = {}
+    for r in rooms:
+        room = Room.query.get(r)
+        response[room.name] = room.messages.all()
+        join_room(room.name)
+    emit('get_messages', response)
+        
+
+
 @socketio.on('join')
 def on_join(data):
     username = data['username']

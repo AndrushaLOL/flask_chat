@@ -14,4 +14,4 @@ api = Api(app)
 socketio = SocketIO(app)
 
 
-from app import routes, models, send_sms, sockets
+from app import routes, models, send_sms, sockets, resourses

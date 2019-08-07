@@ -12,7 +12,7 @@
     <input type="text" placeholder="username" id='username' />
     <button class="btn" onclick="connect()" >Connect</button>
     <input type="text" placeholder="message" id='message'/>
-    <button class="btn" onclick="send()">Send</button>
+    <button class="btn" onclick="send_message()">Send</button>
 
     <button class="btn" onclick="get_messages()"></button>
 
@@ -35,7 +35,7 @@
                 console.log(data)
             })
 
-            socket.on('send_messages', function(data) {
+            socket.on('get_messages', function(data) {
                 console.log(data)
             })
             
@@ -68,13 +68,13 @@
                 var room = document.getElementById('connect')
                 var user = document.getElementById('username')
 
-                socket.emit()
+                socket.emit("initialize", {'username': user.value})
             }
             
-            function get_messages() {
-                var user = document.getElementById('username')
-                socket.emit('get_messages', {username: user.value})
-            }
+            // function get_messages() {
+            //     var user = document.getElementById('username')
+            //     socket.emit('get_messages', {username: user.value})
+            // }
 
 
             function connect() {
@@ -85,15 +85,15 @@
                 current_room = room.value
             }
 
-            function send() {
-                var ms = document.getElementById('message')
-                var room = document.getElementById('connect')
-                var user = document.getElementById('username')
-                socket.emit('send_message', {'message': ms.value, 
-                room: room.value,
-                username: user.value})
-                console.log('Sended!')
-            }
+            // function send() {
+            //     var ms = document.getElementById('message')
+            //     var room = document.getElementById('connect')
+            //     var user = document.getElementById('username')
+            //     socket.emit('send_message', {'message': ms.value, 
+            //     room: room.value,
+            //     username: user.value})
+            //     console.log('Sended!')
+            // }
         // }
 
     </script>
