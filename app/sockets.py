@@ -15,8 +15,7 @@ def on_initialize(data):
     u = User.query.filter_by(username=username).first()
     rooms = u.rooms
     response = {}
-    for r in rooms:
-        room = Room.query.get(r)
+    for room in rooms:
         response[room.name] = room.messages.all()
         join_room(room.name)
     emit('get_messages', response)
