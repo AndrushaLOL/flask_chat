@@ -62,7 +62,14 @@ class UserApi(Resource):
 
         return {'id': u.id, 'username': u.username}
 
+class AddUserApi(Resource):
+    def get(self, username, roomname):
+        u = User.query.filter_by(username=username).first()
+        r = Room.query.filter_by(name=roomname).first()
+        u.rooms.append(r)
+        db.session.commit()
 
+api.add_resource(AddUserApi, '/api/user/<string:username>/<string:roomname>/', endpoint='add')
 api.add_resource(UserApi, '/api/user', endpoint='users')
 api.add_resource(RoomApi, '/api/room', endpoint='rooms')
 api.add_resource(MessageListAPI, '/api/message', endpoint='messages')
