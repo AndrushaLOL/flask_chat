@@ -19,5 +19,5 @@ class MessageListAPI(Resource):
 
 
 
-api.add_resource(MessageAPI, '/api/v1.0/message/<int:id>', endpoint='message')
-api.add_resource(MessageListAPI, '/api/1.0/message', endpoint='messages')
+api.add_resource(MessageAPI, '/api/message/<int:id>', endpoint='message')
+api.add_resource(MessageListAPI, '/api/message', endpoint='messages')

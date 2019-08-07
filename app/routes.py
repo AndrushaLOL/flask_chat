@@ -11,7 +11,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/api/v1.0/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
     phone = request.json.get('phone')
     u = User.query.filter_by(phone=phone).first()
@@ -27,7 +27,7 @@ def register():
     return jsonify({'status': 'ok', 'phone': phone})
 
 
-@app.route('/api/v1.0/verify', methods=['POST'])
+@app.route('/api/verify', methods=['POST'])
 def verify():
     phone = request.json.get('phone')
     code = request.json.get('code')

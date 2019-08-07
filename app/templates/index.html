@@ -9,34 +9,92 @@
 </head>
 <body>
     <input type="text" placeholder="room" id='connect' />
+    <input type="text" placeholder="username" id='username' />
     <button class="btn" onclick="connect()" >Connect</button>
     <input type="text" placeholder="message" id='message'/>
-    <button onclick="send">Send</button>
+    <button class="btn" onclick="send()">Send</button>
+
+    <button class="btn" onclick="get_messages()"></button>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf-8">
 
 
-        var socket = io('https://flask-io-chat.herokuapp.com/');
         var current_room = ''
-        socket.on('connect', function() {
-            socket.emit('my event', {data: 'I\'m connected!'});
-        });
+        var socket = io(window.location.origin)
 
-        function connect() {
-            var room = document.getElementById('connect')
-            socket.join(room.value)
-            console.log('connected to room!')
-            current_room = room.value
-        }
+        socket.on('connect', function () {
+            socket.on('response', function(data) {
+                console.log(data)
+            })
 
-        function send() {
-            var ms = document.getElementById('message')
-            socket.to(current_room).emit('message', {'message': ms.value})
-        }
+            socket.on('message', function (data) {
+                console.log(data)
+            })
+
+            socket.on('send_messages', function(data) {
+                console.log(data)
+            })
+            
+            socket.on('recieve_message', function(data) {
+                console.log(data)
+            })
+
+            socket.on('')
+        })
+
+        // function create_socket() {
+            
+        //     var socket = io();
+
+
+        //     socket.on('connect', function() {
+        //         socket.emit('send_message', {data: 'I\'m connected!'});
+        //     });
+
+        //     socket.on('response', function(data) {
+        //         console.log(data)
+        //     })
+
+        //     socket.on('message', function (data) {
+        //         console.log(data)
+        //     })
+
+            function send_message()
+            {
+                var room = document.getElementById('connect')
+                var user = document.getElementById('username')
+
+                socket.emit()
+            }
+            
+            function get_messages() {
+                var user = document.getElementById('username')
+                socket.emit('get_messages', {username: user.value})
+            }
+
+
+            function connect() {
+                var room = document.getElementById('connect')
+                var user = document.getElementById('username')
+                socket.emit('join', {'username': user.value, 'room': room.value})
+                console.log('connected to room!')
+                current_room = room.value
+            }
+
+            function send() {
+                var ms = document.getElementById('message')
+                var room = document.getElementById('connect')
+                var user = document.getElementById('username')
+                socket.emit('send_message', {'message': ms.value, 
+                room: room.value,
+                username: user.value})
+                console.log('Sended!')
+            }
+        // }
 
     </script>
 </body>

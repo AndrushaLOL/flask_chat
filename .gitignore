@@ -125,5 +125,5 @@ dmypy.json
 
 *.db
 *.sqlite
-
+*.db-journal
 .idea/
