@@ -29,6 +29,7 @@ class User(db.Model):
         if room_name not in self.viewed:
             self.viewed[room_name] = list()
         self.viewed[room_name].extend(self._all_messages[room_name])
+        db.session.commit()
 
 
     def __repr__(self):
