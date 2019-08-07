@@ -26,7 +26,7 @@ class User(db.Model):
         return res
 
     def view_room(self, room_name):
-        if room_name in self.viewed:
+        if room_name not in self.viewed:
             self.viewed[room_name] = list()
         self.viewed[room_name].extend(self._all_messages[room_name])
 
