@@ -16,7 +16,7 @@ def on_initialize(data):
     rooms = u.rooms
     response = {}
     for room in rooms:
-        response[room.name] = room.messages.all()
+        response[room.name] = [ms.serialize for ms in room.messages.all()]
         join_room(room.name)
     emit('get_messages', response)
         
