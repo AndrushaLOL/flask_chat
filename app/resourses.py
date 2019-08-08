@@ -70,7 +70,7 @@ class UserListApi(Resource):
 
 class UserApi(Resource):
     def get(self, username):
-        u = User.query.filter_by(username=username)
+        u = User.query.filter_by(username=username).first()
         if u is None:
             return 'User not found'
         return {'username': username}

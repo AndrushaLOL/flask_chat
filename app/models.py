@@ -31,7 +31,8 @@ class User(db.Model):
         viewed = self.viewed.copy()
         if room_name not in viewed:
             viewed[room_name] = list()
-        viewed[room_name].extend(self._all_messages[room_name])
+
+        viewed[room_name] = viewed[room_name] + self._all_messages[room_name]
 
         self.viewed = viewed
         db.session.commit()
