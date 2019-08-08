@@ -26,9 +26,12 @@ class User(db.Model):
         return res
 
     def view_room(self, room_name):
-        if room_name not in self.viewed:
-            self.viewed[room_name] = list()
-        self.viewed[room_name].extend(self._all_messages[room_name])
+        viewed = self.viewed.copy()
+        if room_name not in viewed:
+            viewed[room_name] = list()
+        viewed[room_name].extend(self._all_messages[room_name])
+
+        self.viewed = viewed
         db.session.commit()
 
 
@@ -48,10 +51,13 @@ class Room(db.Model):
         else:
             return 'dialog'
 
-    # users = db.relationship('User', secondary=association_table, backref='rooms')
-
     def __repr__(self):
-        return f'<Room(name={self.name}>'
+        s = f"""
+        name: {self.name}
+        users: {[u.username for u in self.users]}
+        messages: {self.messages.all()}
+        """
+        return s
 
 
 class Message(db.Model):
@@ -68,6 +74,14 @@ class Message(db.Model):
             'text': self.text
         }
 
+    @property
+    def user(self):
+        return User.query.filter_by(username=self.username).first()
+
+    @property
+    def room(self):
+        return Room.query.get(self.room_id)
+
     def jsonify(self, username):
         u = User.query.filter_by(username=username).first()
         viewed = self.id in u.viewed
@@ -78,5 +92,5 @@ class Message(db.Model):
         }
 
     def __repr__(self):
-        return f'<Message(room_id={self.room_id}>'
+        return f'<Message(room_name={self.room.name}>'
 
