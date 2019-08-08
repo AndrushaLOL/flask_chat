@@ -65,6 +65,15 @@ def on_create_room(data):
     send(f'{r} created!')
 
 
+@socketio.on('send_message')
+def on_message(data):
+    room = data.pop('room')
+    data['room_id'] = Room.query.filter_by(name=room).first().id
+    m = Message(**data)
+    db.session.add(m)
+    db.session.commit()
+
+
 @socketio.on('view')
 def on_view(data):
     username = data['username']
