@@ -75,6 +75,7 @@ class Message(db.Model):
             'id': self.id,
             'room_id': self.room_id,
             'text': self.text,
+            'username': self.username
             # 'time': self.created_at
         }
 
