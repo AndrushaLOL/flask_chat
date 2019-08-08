@@ -56,7 +56,7 @@ class RoomApi(Resource):
         return {'id': r.id, 'name': r.name}
 
 
-class UserApi(Resource):
+class UserListApi(Resource):
     def post(self):
         data = request.get_json()
         data['active'] = True
@@ -67,6 +67,15 @@ class UserApi(Resource):
 
         return {'id': u.id, 'username': u.username}
 
+
+class UserApi(Resource):
+    def get(self, username):
+        u = User.query.filter_by(username=username)
+        if u is None:
+            return 'User not found'
+        return {'username': username}
+
+
 class AddUserApi(Resource):
     def get(self, username, roomname):
         u = User.query.filter_by(username=username).first()
@@ -74,8 +83,10 @@ class AddUserApi(Resource):
         u.rooms.append(r)
         db.session.commit()
 
+
 api.add_resource(AddUserApi, '/api/user/<string:username>/<string:roomname>/', endpoint='add')
-api.add_resource(UserApi, '/api/user', endpoint='users')
+api.add_resource(UserListApi, '/api/user', endpoint='users')
+api.add_resource(UserApi, '/api/user/<string:username>', endpoint='user')
 api.add_resource(RoomApi, '/api/room', endpoint='rooms')
 api.add_resource(MessageListAPI, '/api/message', endpoint='messages')
 api.add_resource(MessageAPI, '/api/message/<int:id>', endpoint='message')
