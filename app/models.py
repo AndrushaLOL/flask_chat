@@ -1,5 +1,7 @@
 from app import db
 import operator as op
+import datetime
+from sqlalchemy.sql import func
 
 association_table = db.Table(
     'association',
@@ -65,13 +67,15 @@ class Message(db.Model):
     username = db.Column(db.String, db.ForeignKey('user.username'))
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
     text = db.Column(db.String)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
     @property
     def serialize(self):
         return {
             'id': self.id,
             'room_id': self.room_id,
-            'text': self.text
+            'text': self.text,
+            # 'time': self.created_at
         }
 
     @property
@@ -81,15 +85,6 @@ class Message(db.Model):
     @property
     def room(self):
         return Room.query.get(self.room_id)
-
-    def jsonify(self, username):
-        u = User.query.filter_by(username=username).first()
-        viewed = self.id in u.viewed
-        return {
-            'text': self.text,
-            'username': self.username,
-            'viewed': viewed
-        }
 
     def __repr__(self):
         return f'<Message(room_name={self.room.name}>'

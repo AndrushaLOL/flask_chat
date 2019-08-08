@@ -17,14 +17,17 @@ def on_initialize(data):
     response = {}
     for room in rooms:
         response[room.name] = {}
-        response[room.name]['message'] = room.messages.all()[-1].serialize
+        try:
+            ms = room.messages.all()[-1].serialize
+        except:
+            ms = {}
+        response[room.name]['message'] = ms
         response[room.name]['count'] = len(u._all_messages.get(room.name, [])) - len(u.viewed.get(room.name, []))
         response[room.name]['users'] = [u.username for u in room.users if u.username != username] 
 
         join_room(room.name)
     emit('get_messages', response)
         
-
 
 @socketio.on('join')
 def on_join(data):
@@ -62,32 +65,12 @@ def on_create_room(data):
     send(f'{r} created!')
 
 
-@socketio.on('send_message')
-def on_message(data):
-    print(data)
-    room = data['room']
-    username = data['username']
-    ms = data['message']
-    m = Message(text=ms, user_name=username, room_id=Room.query.filter_by(name=room).first().id)
-    db.session.add(m)
-    db.session.commit()
-    emit('recieve_message', m.jsonify(), room=room)
-
-
-@socketio.on('get_messages')
-def on_get_messages(data):
-    username = data['username']
-    rooms = User.query.filter_by(username=username).first().rooms
-
-    response = {room.name: [ms.jsonify(username) for ms in room.messages.all()] for room in rooms}
-    print(response)
-    emit('send_messages', response)
-
-
 @socketio.on('view')
 def on_view(data):
     username = data['username']
     room = data['room']
     u = User.query.filter_by(username=username).first()
     u.view_room(room)
+    r = Room.query.filter_by(name=room).first()
+    emit('room_message', [ms.serialize for ms in r.messages])
     
