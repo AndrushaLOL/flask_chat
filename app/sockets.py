@@ -72,6 +72,7 @@ def on_message(data):
     m = Message(**data)
     db.session.add(m)
     db.session.commit()
+    emit('new_message', m.serialize, room=room)
 
 
 @socketio.on('view')

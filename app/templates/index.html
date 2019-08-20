@@ -48,6 +48,9 @@
                 t = data['time']
                 
             })
+            socket.on('new_message', function(data) {
+                console.log(data)
+            })
         })
 
         // function create_socket() {
@@ -75,10 +78,12 @@
                 socket.emit("initialize", {'username': user.value})
             }
             
-            // function get_messages() {
-            //     var user = document.getElementById('username')
-            //     socket.emit('get_messages', {username: user.value})
-            // }
+            function send_message() {
+                var user = document.getElementById('username')
+                var room = document.getElementById('connect')
+                var message = document.getElementById('message')
+                socket.emit('send_message', {username: user.value, room: room.value, text: message.value})
+            }
 
 
             function connect() {

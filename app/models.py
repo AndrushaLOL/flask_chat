@@ -2,6 +2,7 @@ from app import db
 import operator as op
 import datetime
 from sqlalchemy.sql import func
+from sqlalchemy.ext.hybrid import hybrid_property
 
 association_table = db.Table(
     'association',
@@ -16,9 +17,13 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, index=True)
     phone = db.Column(db.String, unique=True, index=True)
     active = db.Column(db.Boolean, default=False)
-    messages = db.relationship('Message', backref='author', lazy='dynamic')
-    viewed = db.Column(db.PickleType, default=dict)
+    messages = db.relationship('Message', backref='user', lazy='dynamic')
+    viewed = db.Column(db.PickleType, default=dict, nullable=False)
     rooms = db.relationship('Room', secondary=association_table, backref='users')
+
+    @hybrid_property
+    def contacts(self):
+        return [room.name for room in self.rooms]
 
     @property
     def _all_messages(self):
@@ -74,19 +79,12 @@ class Message(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'room_id': self.room_id,
+            'roomname': self.room.name,
             'text': self.text,
-            'username': self.username
-            # 'time': self.created_at
+            'username': self.username,
+            'time': str(self.created_at)
         }
 
-    @property
-    def user(self):
-        return User.query.filter_by(username=self.username).first()
-
-    @property
-    def room(self):
-        return Room.query.get(self.room_id)
 
     def __repr__(self):
         return f'<Message(room_name={self.room.name}>'

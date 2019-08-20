@@ -24,6 +24,8 @@ class MessageAPI(Resource):
         db.session.delete(m)
         db.session.commit()
 
+        return {'status': 'ok'}
+
 
 class MessageListAPI(Resource):
     def get(self):
@@ -55,6 +57,14 @@ class RoomApi(Resource):
         db.session.commit()
         return {'id': r.id, 'name': r.name}
 
+    def delete(self):
+        data = request.get_json()
+        r = Room.query.filter_by(name=data['name']).first()
+        db.session.delete(r)
+        db.session.commit()
+
+        return {'status': 'ok'}
+
 
 class UserListApi(Resource):
     def post(self):
@@ -74,6 +84,14 @@ class UserApi(Resource):
         if u is None:
             return 'User not found'
         return {'username': username}
+    
+    def delete(self, username):
+        u = User.query.filter_by(username=username).first()
+        if u in None:
+            return {'status': 'Failed', 'message': 'User Not Found'}
+        db.session.remove(u)
+        db.session.commit()
+        return {'status': 'ok'}
 
 
 class AddUserApi(Resource):
@@ -85,8 +103,8 @@ class AddUserApi(Resource):
 
 
 api.add_resource(AddUserApi, '/api/user/<string:username>/<string:roomname>/', endpoint='add')
-api.add_resource(UserListApi, '/api/user', endpoint='users')
 api.add_resource(UserApi, '/api/user/<string:username>', endpoint='user')
+api.add_resource(UserListApi, '/api/user', endpoint='users')
 api.add_resource(RoomApi, '/api/room', endpoint='rooms')
 api.add_resource(MessageListAPI, '/api/message', endpoint='messages')
 api.add_resource(MessageAPI, '/api/message/<int:id>', endpoint='message')
