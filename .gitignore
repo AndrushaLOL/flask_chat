@@ -127,3 +127,4 @@ dmypy.json
 *.sqlite
 *.db-journal
 .idea/
+.vscode/

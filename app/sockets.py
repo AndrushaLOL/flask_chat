@@ -69,7 +69,12 @@ def on_create_room(data):
 def on_message(data):
     room = data.pop('room')
     data['room_id'] = Room.query.filter_by(name=room).first().id
+    u = User.query.filter_by(username=data['username']).first()
+
     m = Message(**data)
+    v = u.viewed
+    v[room] = v[room] + [m.id]
+    u.viewed = v
     db.session.add(m)
     db.session.commit()
     emit('new_message', m.serialize, room=room)
