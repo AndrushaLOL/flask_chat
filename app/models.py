@@ -1,8 +1,14 @@
-from app import db
 import operator as op
 import datetime
+
+import jwt
 from sqlalchemy.sql import func
 from sqlalchemy.ext.hybrid import hybrid_property
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+
+from app import db, login, app
+
 
 association_table = db.Table(
     'association',
@@ -12,18 +18,56 @@ association_table = db.Table(
 )
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, index=True)
-    phone = db.Column(db.String, unique=True, index=True)
+    email = db.Column(db.String, unique=True, index=True)
     active = db.Column(db.Boolean, default=False)
     messages = db.relationship('Message', backref='user', lazy='dynamic')
+    password_hash = db.Column(db.String(128))
     viewed = db.Column(db.PickleType, default=dict, nullable=False)
     rooms = db.relationship('Room', secondary=association_table, backref='users')
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     @hybrid_property
     def contacts(self):
         return [room.name for room in self.rooms]
+
+    def encode_auth_token(self):
+        """
+        Generates auth token
+        :return: string
+        """
+        try:
+            payload = {
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+                'iat': datetime.datetime.utcnow(),
+                'sub': self.id
+            }
+            return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+        except Exception as e:
+            return e
+
+    @staticmethod
+    def decode_auth_token(auth_token):
+        """
+        Decode auth token
+        :param auth_token:
+        :return: string|integer
+        """
+        try:
+            payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            return 'Signature expired. Please log in again'
+        except jwt.InvalidTokenError:
+            return 'Invalid token. Please log in again'
+
 
     @property
     def _all_messages(self):
@@ -44,7 +88,7 @@ class User(db.Model):
 
 
     def __repr__(self):
-        return '<User(phone={})>'.format(self.phone)
+        return '<User(username={})>'.format(self.username)
 
 
 class Room(db.Model):
@@ -88,4 +132,11 @@ class Message(db.Model):
 
     def __repr__(self):
         return f'<Message(room_name={self.room.name}>'
+
+
+
+
+
+
+
 

@@ -36,13 +36,13 @@ class MessageListAPI(Resource):
         print(data)
         rid = Room.query.filter_by(name=data.pop('room')).first().id
         if rid is None:
-            return 'No room'
+            return {'status': 'failed', 'message': 'Room not found'}
         data['room_id'] = rid
         m = Message(**data)
         db.session.add(m)
         db.session.commit()
 
-        return m.serialize
+        return {'status': 'ok', **m.serialize}
 
 
 class RoomApi(Resource):
@@ -55,7 +55,7 @@ class RoomApi(Resource):
             u.rooms.append(r)
         db.session.add(r)
         db.session.commit()
-        return {'id': r.id, 'name': r.name}
+        return {'id': r.id, 'name': r.name, 'status': 'ok'}
 
     def delete(self):
         data = request.get_json()
@@ -67,15 +67,21 @@ class RoomApi(Resource):
 
 
 class UserListApi(Resource):
+    def get(self):
+        us = User.query.all()
+        return [u.username for u in us]
+
     def post(self):
         data = request.get_json()
         data['active'] = True
         data['viewed'] = dict()
+        password = data.pop('password')
         u = User(**data)
+        u.set_password(password)
         db.session.add(u)
         db.session.commit()
 
-        return {'id': u.id, 'username': u.username}
+        return {'status': 'ok', 'token': u.encode_auth_token().decode()}
 
 
 class UserApi(Resource):
@@ -102,9 +108,9 @@ class AddUserApi(Resource):
         db.session.commit()
 
 
+api.add_resource(UserListApi, '/api/user', endpoint='users')
 api.add_resource(AddUserApi, '/api/user/<string:username>/<string:roomname>/', endpoint='add')
 api.add_resource(UserApi, '/api/user/<string:username>', endpoint='user')
-api.add_resource(UserListApi, '/api/user', endpoint='users')
 api.add_resource(RoomApi, '/api/room', endpoint='rooms')
 api.add_resource(MessageListAPI, '/api/message', endpoint='messages')
 api.add_resource(MessageAPI, '/api/message/<int:id>', endpoint='message')

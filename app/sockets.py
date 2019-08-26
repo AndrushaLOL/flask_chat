@@ -1,9 +1,11 @@
 from app import socketio, db
 from app.models import Message, Room, User
 from flask_socketio import join_room, leave_room, send, emit
+from flask_login import login_required
 
 
 @socketio.on('connect')
+@login_required
 def on_connect():
     # print(data)
     send('Connected!')
