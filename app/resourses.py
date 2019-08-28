@@ -95,7 +95,7 @@ class UserApi(Resource):
             'id': u.id,
             'username': u.username,
             'email': u.email,
-            'photo': u.photo
+            'photo': u.photo_url
         }
     
     def delete(self, username):
