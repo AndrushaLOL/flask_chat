@@ -1,5 +1,6 @@
 import operator as op
 import datetime
+from hashlib import md5
 
 import jwt
 from sqlalchemy.sql import func
@@ -27,6 +28,18 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
     viewed = db.Column(db.PickleType, default=dict, nullable=False)
     rooms = db.relationship('Room', secondary=association_table, backref='users')
+    photo_url = db.Column(db.String)
+
+    def avatar(self, size):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
+            digest, size)
+
+    def add_room(self, room):
+        self.rooms.append(room)
+
+    def del_room(self, room):
+        self.rooms.remove(room)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -62,7 +75,7 @@ class User(db.Model, UserMixin):
         """
         try:
             payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
-            return payload['sub']
+            return int(payload['sub'])
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please log in again'
         except jwt.InvalidTokenError:

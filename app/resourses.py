@@ -77,6 +77,8 @@ class UserListApi(Resource):
         data['viewed'] = dict()
         password = data.pop('password')
         u = User(**data)
+        if 'photo' not in data:
+            u.photo = u.avatar(128)
         u.set_password(password)
         db.session.add(u)
         db.session.commit()
@@ -89,11 +91,16 @@ class UserApi(Resource):
         u = User.query.filter_by(username=username).first()
         if u is None:
             return 'User not found'
-        return {'username': username}
+        return {
+            'id': u.id,
+            'username': u.username,
+            'email': u.email,
+            'photo': u.photo
+        }
     
     def delete(self, username):
         u = User.query.filter_by(username=username).first()
-        if u in None:
+        if u is None:
             return {'status': 'Failed', 'message': 'User Not Found'}
         db.session.remove(u)
         db.session.commit()
