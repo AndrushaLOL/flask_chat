@@ -78,7 +78,7 @@ class UserListApi(Resource):
         password = data.pop('password')
         u = User(**data)
         if 'photo_url' not in data:
-            u.photo = u.avatar(128)
+            u.photo_url = u.avatar(128)
         u.set_password(password)
         db.session.add(u)
         db.session.commit()
@@ -95,7 +95,7 @@ class UserApi(Resource):
             'id': u.id,
             'username': u.username,
             'email': u.email,
-            'photo': u.photo_url
+            'photo_url': u.photo_url
         }
     
     def delete(self, username):
