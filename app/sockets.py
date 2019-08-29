@@ -1,13 +1,28 @@
+from functools import wraps
+
+from flask_socketio import join_room, leave_room, send, emit, disconnect
+from flask_login import login_required
+from flask import request
+
 from app import socketio, db
 from app.models import Message, Room, User
-from flask_socketio import join_room, leave_room, send, emit
-from flask_login import login_required
+
+
+def token_requered(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        resp = User.decode_auth_token(request.args.get('token', '12345'))
+        if not isinstance(resp, int):
+            print('Clent disconnected')
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapper
 
 
 @socketio.on('connect')
-@login_required
+@token_requered
 def on_connect():
-    # print(data)
     send('Connected!')
 
 

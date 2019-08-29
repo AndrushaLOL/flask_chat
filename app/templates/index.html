@@ -29,7 +29,11 @@
 
 
         var current_room = ''
-        var socket = io(window.location.origin)
+        var socket = io(window.location.origin, {
+            query: {
+                token: "huy"
+            }
+        })
 
         socket.on('connect', function () {
             socket.on('response', function(data) {

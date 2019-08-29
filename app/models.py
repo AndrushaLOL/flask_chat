@@ -107,7 +107,7 @@ class User(db.Model, UserMixin):
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True, index=True)
-    messages = db.relationship('Message', backref='room', lazy='dynamic')
+    messages = db.relationship('Message', backref='room', lazy='dynamic', order_by='desc(Message.created_at)')
 
     @property
     def type(self):
@@ -144,7 +144,7 @@ class Message(db.Model):
 
 
     def __repr__(self):
-        return f'<Message(room_name={self.room.name}>'
+        return f'<Message(room_name={self.room.name}, text={self.text}>'
 
 
 
