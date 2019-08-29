@@ -104,5 +104,5 @@ def on_view(data):
     u = User.query.filter_by(username=username).first()
     u.view_room(room)
     r = Room.query.filter_by(name=room).first()
-    emit('room_messages', [ms.serialize for ms in r.messages])
+    emit('room_messages', [ms.serialize for ms in r.messages.all()])
     
