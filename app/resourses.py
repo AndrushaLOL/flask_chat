@@ -3,6 +3,13 @@ from flask import request
 from app import db, api
 from app.models import Message, Room, User
 
+def succes(**kwargs):
+    res = {'status': 'success', **kwargs}
+    return res
+
+def error(**kwargs):
+    res = {'status': 'error', **kwargs}
+    return res
 
 class MessageAPI(Resource):
     def get(self, id):
@@ -17,14 +24,14 @@ class MessageAPI(Resource):
             setattr(m, k, v)
         db.session.commit()
         print(m.text)
-        return {}
+        return succes()
 
     def delete(self, id):
         m = Message.query.get(id)
         db.session.delete(m)
         db.session.commit()
 
-        return {'status': 'ok'}
+        return succes()
 
 
 class MessageListAPI(Resource):
@@ -42,7 +49,7 @@ class MessageListAPI(Resource):
         db.session.add(m)
         db.session.commit()
 
-        return {'status': 'ok', **m.serialize}
+        return succes(**m.serialize)
 
 
 class RoomApi(Resource):
@@ -52,10 +59,14 @@ class RoomApi(Resource):
         users = data['users']
         for username in users:
             u = User.query.filter_by(username=username).first()
+            v = u.viewed.copy()
+            v[r.name] = 0
+            u.viewed = v
+            print(u.viewed)
             u.rooms.append(r)
         db.session.add(r)
         db.session.commit()
-        return {'id': r.id, 'name': r.name, 'status': 'ok'}
+        return succes(id=r.id, name=r.name)
 
     def delete(self):
         data = request.get_json()
@@ -63,7 +74,7 @@ class RoomApi(Resource):
         db.session.delete(r)
         db.session.commit()
 
-        return {'status': 'ok'}
+        return succes()
 
 
 class UserListApi(Resource):
@@ -83,28 +94,26 @@ class UserListApi(Resource):
         db.session.add(u)
         db.session.commit()
 
-        return {'status': 'ok', 'token': u.encode_auth_token().decode()}
+        return succes(token=u.encode_auth_token().decode())
 
 
 class UserApi(Resource):
     def get(self, username):
         u = User.query.filter_by(username=username).first()
-        if u is None:
-            return 'User not found'
-        return {
-            'id': u.id,
-            'username': u.username,
-            'email': u.email,
-            'photo_url': u.photo_url
-        }
+        try:
+            return succes(**u.serialize, friends=[f.serialize for f in u.friends])
+        except Exception as e:
+            return error(message='Something went wrong')
+
     
     def delete(self, username):
         u = User.query.filter_by(username=username).first()
-        if u is None:
-            return {'status': 'Failed', 'message': 'User Not Found'}
-        db.session.delete(u)
-        db.session.commit()
-        return {'status': 'ok'}
+        try:
+            db.session.delete(u)
+            db.session.commit()
+            return succes()
+        except:
+            return error(message='Something went wrong')
 
 
 class AddUserApi(Resource):
@@ -113,6 +122,26 @@ class AddUserApi(Resource):
         r = Room.query.filter_by(name=roomname).first()
         u.rooms.append(r)
         db.session.commit()
+
+class AddFriend(Resource):
+    def get(self, username, friend):
+        u = User.query.filter_by(username=username).first()
+        f = User.query.filter_by(username=username).first()
+
+        u.add_friend(f)
+
+        db.session.commit()
+        return succes()
+    
+    def delete(self, username, friend):
+        u = User.query.filter_by(username=username).first()
+        f = User.query.filter_by(username=username).first()
+
+        u.delete_friend(f)
+
+        db.session.commit()
+        return succes()
+        
 
 
 api.add_resource(UserListApi, '/api/user', endpoint='users')

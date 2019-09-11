@@ -39,11 +39,12 @@ def on_initialize(data):
         except:
             ms = {}
         response[room.name]['message'] = ms
-        response[room.name]['count'] = len(u._all_messages.get(room.name, [])) - len(u.viewed.get(room.name, []))
+        response[room.name]['count'] = u.viewed[room.name]
         response[room.name]['users'] = [u.username for u in room.users if u.username != username] 
 
         join_room(room.name)
     emit('get_messages', response)
+    print(f'sent {len(response)} rooms')
         
 
 @socketio.on('join')
@@ -62,39 +63,27 @@ def on_leave(data):
     send(f'{username} disconnected from the room.', room=room)
 
 
-@socketio.on('create_room')
-def on_create_room(data):
-    room_name = data['room']
-    users = data['users']
-    us = []
-    for u in users:
-        user = User.query.filter_by(username=u).first()
-        if user is None:
-            send('Error')
-            return
-        us.append(user)
-    r = Room(name=room_name)
-    r.users.extend(us)
-
-    db.session.add(r)
-    db.session.commit()
-
-    send(f'{r} created!')
-
-
 @socketio.on('send_message')
 def on_message(data):
     room = data.pop('room')
     data['room_id'] = Room.query.filter_by(name=room).first().id
     u = User.query.filter_by(username=data['username']).first()
 
+    r = Room.query.filter_by(name=room).first()
+
+    for user in r.users:
+        viewed = user.viewed.copy()
+        viewed[room] += 1
+        user.viewed = viewed
+
     m = Message(**data)
     v = u.viewed
-    v[room] = v[room] + [m.id]
+    v[room] = 0
     u.viewed = v
     db.session.add(m)
     db.session.commit()
     emit('new_message', m.serialize, room=room)
+    print(f'new message from {m.username} to {room}')
 
 
 @socketio.on('view')
@@ -104,5 +93,6 @@ def on_view(data):
     u = User.query.filter_by(username=username).first()
     u.view_room(room)
     r = Room.query.filter_by(name=room).first()
-    emit('room_messages', [ms.serialize for ms in r.messages.all()])
-    
+    messages = r.messages.all()
+    print(f'sent {len(messages)} messages')
+    emit('room_messages', [ms.serialize for ms in messages])

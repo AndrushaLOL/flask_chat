@@ -14,16 +14,17 @@ class UserTestCase(unittest.TestCase):
         db.drop_all()
 
     def test_create_user(self):
-        u = User(username='test', phone='895123')
+        u = User(username='test', email='test@mail.ru')
         db.session.add(u)
         db.session.commit()
         self.assertEqual(u.username, 'test')
         self.assertEqual(u.viewed, {})
         self.assertEqual(u.messages.all(), [])
         self.assertEqual(u.rooms, [])
+        self.assertEqual(u.friends.all(), [])
 
     def test_add_room(self):
-        u = User(username='test_user', phone='123')
+        u = User(username='test_user', email='test@mail.ru')
         r = Room(name='test_room')
         db.session.add(u)
         db.session.add(r)
@@ -37,8 +38,8 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(u.rooms, [r])
 
     def test_new_message(self):
-        u1 = User(username='test_user1', phone='123')
-        u2 = User(username='test_user2', phone='1234')
+        u1 = User(username='test_user1', email='test@mail.ru')
+        u2 = User(username='test_user2', email='test2@mail.ru')
 
         r = Room(name='test_room')
 
@@ -60,6 +61,22 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(m2.user, u2)
         self.assertEqual(m1.room, r)
         self.assertEqual(m2.room, r)
+
+    def test_friends(self):
+        u1 = User(username='test_user1', email='test@mail.ru')
+        u2 = User(username='test_user2', email='test2@mail.ru')
+
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+
+        u1.add_friend(u1)
+        db.session.commit()
+        self.assertEqual(u1.friends.all(), [])
+        u1.add_friend(u2)
+        db.session.commit()
+        self.assertEqual(u1.friends.all(), [u2])
+        self.assertEqual(u2.friends.all(), [u1])
 
 
 if __name__ == '__main__':

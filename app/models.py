@@ -18,6 +18,13 @@ association_table = db.Table(
     db.Column('room_id', db.Integer, db.ForeignKey('room.id'))
 )
 
+friends_secondary = db.Table(
+    'friends',
+    db.metadata,
+    db.Column('left_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('right_id', db.Integer, db.ForeignKey('user.id'))
+)
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,6 +36,25 @@ class User(db.Model, UserMixin):
     viewed = db.Column(db.PickleType, default=dict, nullable=False)
     rooms = db.relationship('Room', secondary=association_table, backref='users')
     photo_url = db.Column(db.String)
+    last_seen = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    
+    friends = db.relationship('User', secondary=friends_secondary, 
+        primaryjoin=(friends_secondary.c.left_id == id),
+        secondaryjoin=(friends_secondary.c.right_id == id),
+        lazy='dynamic')
+
+    def add_friend(self, u):
+        if not self.is_friend(u) and self.id != u.id:
+            u.friends.append(self)
+            self.friends.append(u)
+
+    def delete_friend(self, u):
+        if self.is_friend(u) and self.id != u.id:
+            u.friends.remove(self)
+            self.friends.remove(u)
+
+    def is_friend(self, u):
+        return self.friends.filter(friends_secondary.c.left_id == u.id).count() > 0
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
@@ -81,24 +107,18 @@ class User(db.Model, UserMixin):
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again'
 
-
-    @property
-    def _all_messages(self):
-        res = {}
-        for room in self.rooms:
-            res[room.name] = list(map(op.attrgetter('id'), room.messages.all()))
-        return res
-
     def view_room(self, room_name):
         viewed = self.viewed.copy()
-        if room_name not in viewed:
-            viewed[room_name] = list()
 
-        viewed[room_name] = self._all_messages[room_name]
+        viewed[room_name] = 0
 
         self.viewed = viewed
         db.session.commit()
 
+    def serialize(self):
+        return {'id': self.id,
+        'username': self.username,
+        'email': self.email}
 
     def __repr__(self):
         return '<User(username={})>'.format(self.username)
@@ -107,9 +127,10 @@ class User(db.Model, UserMixin):
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True, index=True)
-    messages = db.relationship('Message', backref='room', lazy='dynamic', order_by='desc(Message.created_at)')
+    messages = db.relationship('Message', backref='room', lazy='dynamic', order_by='Message.created_at', cascade='all, delete-orphan')
 
-    @property
+
+    @hybrid_property
     def type(self):
         if len(self.users) > 2:
             return 'group'
@@ -145,11 +166,4 @@ class Message(db.Model):
 
     def __repr__(self):
         return f'<Message(room_name={self.room.name}, text={self.text}>'
-
-
-
-
-
-
-
-
+        
