@@ -101,7 +101,7 @@ class UserApi(Resource):
     def get(self, username):
         u = User.query.filter_by(username=username).first()
         try:
-            return succes(**u.serialize, friends=[f.serialize for f in u.friends])
+            return succes(**u.serialize, friends=[f.serialize() for f in u.friends])
         except Exception as e:
             return error(message='Something went wrong')
 
