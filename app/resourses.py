@@ -102,7 +102,7 @@ class UserApi(Resource):
         u = User.query.filter_by(username=username).first()
 
         try:
-            return {**u.serialize, 'friends': [f.serialize() for f in u.friends]}
+            return {**u.serialize(), 'friends': [f.serialize() for f in u.friends]}
         except Exception as e:
             print(e)
             return error(message='Something went wrong')
