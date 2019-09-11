@@ -118,7 +118,8 @@ class User(db.Model, UserMixin):
     def serialize(self):
         return {'id': self.id,
         'username': self.username,
-        'email': self.email}
+        'email': self.email,
+        'photo_url': self.photo_url}
 
     def __repr__(self):
         return '<User(username={})>'.format(self.username)
