@@ -103,7 +103,7 @@ class UserApi(Resource):
         try:
             return succes(**u.serialize, friends=[f.serialize for f in u.friends])
         except Exception as e:
-            return error(message=e.message)
+            return error(message='Something went wrong')
 
     
     def delete(self, username):
