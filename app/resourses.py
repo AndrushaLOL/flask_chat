@@ -128,7 +128,7 @@ class AddUserApi(Resource):
 class AddFriend(Resource):
     def get(self, username, friend):
         u = User.query.filter_by(username=username).first()
-        f = User.query.filter_by(username=username).first()
+        f = User.query.filter_by(username=friend).first()
 
         u.add_friend(f)
 
@@ -137,7 +137,7 @@ class AddFriend(Resource):
     
     def delete(self, username, friend):
         u = User.query.filter_by(username=username).first()
-        f = User.query.filter_by(username=username).first()
+        f = User.query.filter_by(username=friend).first()
 
         u.delete_friend(f)
 
@@ -147,7 +147,7 @@ class AddFriend(Resource):
 
 
 api.add_resource(UserListApi, '/api/user', endpoint='users')
-api.add_resource(AddUserApi, '/api/user/<string:username>/<string:roomname>/', endpoint='add')
+api.add_resource(AddFriend, '/api/user/<string:username>/<string:friend>/', endpoint='add')
 api.add_resource(UserApi, '/api/user/<string:username>', endpoint='user')
 api.add_resource(RoomApi, '/api/room', endpoint='rooms')
 api.add_resource(MessageListAPI, '/api/message', endpoint='messages')
