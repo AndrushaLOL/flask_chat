@@ -96,3 +96,13 @@ def on_view(data):
     messages = r.messages.all()
     print(f'sent {len(messages)} messages')
     emit('room_messages', [ms.serialize for ms in messages])
+
+@socketio.on('update_last_seen'):
+def on_update_last_seen(data):
+    username = data['username']
+    u = User.query.filter_by(username=username).frist()
+
+    u.last_seen = datetime.datetime.utcnow()
+
+    db.session.commit()
+

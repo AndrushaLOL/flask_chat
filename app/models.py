@@ -119,7 +119,8 @@ class User(db.Model, UserMixin):
         return {'id': self.id,
         'username': self.username,
         'email': self.email,
-        'photo_url': self.photo_url}
+        'photo_url': self.photo_url,
+        'last_seen': str(self.last_seen)}
 
     def __repr__(self):
         return '<User(username={})>'.format(self.username)
