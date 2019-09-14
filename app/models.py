@@ -84,7 +84,7 @@ class User(db.Model, UserMixin):
         """
         try:
             payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(weeks=1),
                 'iat': datetime.datetime.utcnow(),
                 'sub': self.id
             }

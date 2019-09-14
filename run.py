@@ -4,8 +4,10 @@ import random
 
 
 def make_base_objects():
-    u1 = User(username='Andrey', phone='123')
-    u2 = User(username='Alsu', phone='1234')
+    u1 = User(username='Andrey', email='123')
+    u2 = User(username='Alsu', email='1234')
+    u1.set_password('12345')
+    u2.set_password('12345')
     r = Room(name='test')
     u1.rooms.append(r)
     u2.rooms.append(r)

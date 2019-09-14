@@ -1,4 +1,5 @@
 from functools import wraps
+import datetime
 
 from flask_socketio import join_room, leave_room, send, emit, disconnect
 from flask_login import login_required
@@ -14,8 +15,10 @@ def token_requered(f):
         resp = User.decode_auth_token(request.args.get('token', '12345'))
         if not isinstance(resp, int):
             print('Clent disconnected')
+            send('disconnected')
             disconnect()
         else:
+            print('accepted')
             return f(*args, **kwargs)
     return wrapper
 
@@ -65,6 +68,7 @@ def on_leave(data):
 
 @socketio.on('send_message')
 def on_message(data):
+    print('DEBUG', request.json)
     room = data.pop('room')
     data['room_id'] = Room.query.filter_by(name=room).first().id
     u = User.query.filter_by(username=data['username']).first()
@@ -97,12 +101,15 @@ def on_view(data):
     print(f'sent {len(messages)} messages')
     emit('room_messages', [ms.serialize for ms in messages])
 
+
 @socketio.on('update_last_seen')
 def on_update_last_seen(data):
     username = data['username']
-    u = User.query.filter_by(username=username).frist()
-
+    u = User.query.filter_by(username=username).first()
+    print(u.last_seen)
     u.last_seen = datetime.datetime.utcnow()
-
     db.session.commit()
+
+    u = User.query.filter_by(username=username).first()
+    print(u.last_seen)
 
