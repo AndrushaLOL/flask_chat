@@ -24,7 +24,6 @@ def token_requered(f):
 
 
 @socketio.on('connect')
-@token_requered
 def on_connect():
     send('Connected!')
 
@@ -100,7 +99,7 @@ def on_view(data):
     messages = r.messages.all()
     print(f'sent {len(messages)} messages')
     emit('room_messages', [ms.serialize for ms in messages])
-
+р
 
 @socketio.on('update_last_seen')
 def on_update_last_seen(data):
